@@ -697,3 +697,11 @@
   front-matter. For the paper: session continuity engineering (his
   Session Start/End loop, handoff state, and now dated checkpoint
   markers) is a first-class part of the accessibility architecture.
+
+- **2026-08-06 — Distribution as a scoped phase, not an afterthought.**
+  The Microsoft Store question was answered with a code audit first
+  (stale build spec, hardcoded paths, a small honest network surface)
+  and then a four-part scope statement (`SCOPE_STORE_RELEASE.md`) before
+  any code moved. For the paper: the local-first architecture made the
+  privacy documentation nearly free — when nothing leaves the machine,
+  the compliance story is a description, not a redesign.
