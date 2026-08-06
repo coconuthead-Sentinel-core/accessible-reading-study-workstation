@@ -37,7 +37,15 @@ of the sprint.
 5. **Certification testing** — Windows App Certification Kit run against
    the MSIX; clean-machine test (no Python installed, no OneDrive, no
    `sbrya` account).
-6. **Store listing & submission** — Partner Center listing at a
+6. **IP-clean pass** (added by logged decision, owner's audit order
+   2026-08-06) — rename the user-facing "Pomodoro" feature (registered
+   trademark, Cirillo, actively enforced against timer software) to a
+   generic name ("Focus Cycles"); static gate keeps the mark out of
+   shipped UI strings. LICENSE copyright line updated to the owner's
+   legal name. Audit found all other content clear: generic templates,
+   no bundled third-party text, all dependencies permissively licensed,
+   no patent exposure.
+7. **Store listing & submission** — Partner Center listing at a
    **one-time purchase price of $29.95** (owner's decision, 2026-08-06:
    penetration pricing — undercut the $49.99-lifetime category comps,
    no subscription); honest feature copy (AI assistant worded as
