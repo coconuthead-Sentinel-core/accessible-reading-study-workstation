@@ -38,14 +38,24 @@ of the sprint.
    the MSIX; clean-machine test (no Python installed, no OneDrive, no
    `sbrya` account).
 6. **Store listing & submission** — Partner Center listing at a
-   **one-time purchase price** (owner sets the number); honest feature
-   copy (AI assistant worded as optional Ollama integration or left off
-   the bullets); submission filed by the owner.
+   **one-time purchase price of $29.95** (owner's decision, 2026-08-06:
+   penetration pricing — undercut the $49.99-lifetime category comps,
+   no subscription); honest feature copy (AI assistant worded as
+   optional Ollama integration or left off the bullets); submission
+   filed by the owner.
 
 ## 2. Out of scope (explicit)
 
-- **Subscription / Pro tier and all in-app purchases** — nothing exists
-  yet with continuing cost; parked until a real ongoing service exists.
+- **Subscription / Pro tier and all in-app purchases** — ruled out by
+  the owner on market evidence (offline chatbots retail at $0; category
+  lifetime ceiling $49.99): nothing exists yet with continuing cost;
+  parked until a real ongoing service exists.
+- **Bundled assistant ("Assistant in the Box")** — legally cleared
+  (Ollama MIT; Llama 3.2 Community License permits commercial
+  redistribution with license copy + "Built with Llama" display) but
+  deferred to its own Phase-2 scoped ticket: embedded llama.cpp engine
+  + model in the MSIX (~2GB, well under the Store's 25GB cap), shipped
+  as the first Store update. v1 ships with the assistant optional.
 - **Android / iOS / smartwatch / smart-ring versions** — separate future
   project behind its own scope-first gate (cross-platform rewrite).
 - **New features of any kind** — this sprint changes where the app runs,
