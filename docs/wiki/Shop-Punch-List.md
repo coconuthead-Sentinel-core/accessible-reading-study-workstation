@@ -103,6 +103,22 @@ measurement of the finished product, not a build item.
 
 | 13 | Progress Observatory: ONE descriptive-analytics panel answering the stakeholder question “effort, attempts, misses, supports used, consistency over time” from existing local records (aggregation only; no prediction — n-of-one overfits; admission rule ratified 2026-08-03) | owner's data-analytics coursework session | GREEN-LIT — scope-first doc = cycle C4 |
 
+| 14 | Store-release hardening scope (`docs/SCOPE_STORE_RELEASE.md`): build repair, portability pass, privacy policy, MSIX, WACK certification, IP-clean pass (Pomodoro → "Focus Cycles"), Partner Center listing at $29.95 one-time. Carries acceptance criteria A1–A6 | foreman's 2026-08-06 sprint draft — **found unboarded on branch `forge-work` during the 2026-11-17 walk** | OPEN — **PROPOSED, awaiting Falcon One sign-off** since 2026-08-06. Three commits (`de0f49c`, `00d78fd`, `3bdfa34`) sit unmerged, 3 ahead / 4 behind `main`. Triage N1 |
+| 15 | Mirror-law breach, two stations: laptop `C:\Users\sbrya\Desktop\Sentinel personal Development` is `main` @ `056a6f7`, clean but **109 commits behind** (files 2026-07-16, pre-v1.0); worktree `C:\Users\sbrya\OneDrive\Desktop\Sentinel-Forge` is `main` @ `1177f65` with `sentinel_personal_development.py` + `sentinel.ico` **deleted** — that copy cannot launch the app. Both verified fast-forward-safe ancestors of `1fc3c68` | 2026-11-17 board-clearing walk | OPEN — SCOPE.md §3 makes mirror agreement an acceptance criterion. Laptop pull is foreman's on the owner's word; repair-or-retire of the fourth station is the owner's call. Triage N4 / N5 |
+| 16 | Paperwork names the wrong live install: `Session-Notes-and-Handoff.md` and `Development-Workflow.md` both instruct editing `Desktop\Sentinel-Forge`, but the shortcut, the last run, and HEAD all say the live install is `OneDrive\Sentinel personal development`. Same class as the EARP `src/` find — the code moved, the paperwork didn't | 2026-11-17 board-clearing walk | OPEN — foreman's, no owner decision needed. Triage N6 |
+| 17 | OneDrive placeholder-hydration risk: **180 of 198 files** in the live install carry `RECALL_ON_DATA_ACCESS`. They hydrate on demand (proven on `ai_brain.py` this session) but a suite run, a PyInstaller build, or an offline start touches all of them at once — the exact failure that stopped the EARP suite with 25 such files | 2026-11-17 board-clearing walk | OPEN — one fix: `attrib +p /s` over the folder, or Explorer → *Always keep on this device*. Owner's disk, owner's click. Triage N7 |
+| 18 | Field observation, review Delete: 18 `ftb-review: DELETE claimed` breadcrumbs on 2026-11-17 01:13–02:48 — 2 cleared on today, 16 refused across nine past dates, five of those days re-pressed inside 1.3 s. Code inspected: `_review_remove_from_toolbar` breadcrumbs **and** speaks its refusal, so punch #5's law is honored in the letter. Open question is whether the status line registered | 2026-11-17 board-clearing walk, from his own run | OPEN — **not yet a defect.** One owner answer decides: working-as-designed, or a 🔴 invisible-state recurrence (class at 10 marks). Triage N3 |
+
+**EISENHOWER WALK 2026-11-17 (proprietor's order: "make sure that
+everything on the board is cleared"):** every open line above now carries a
+bucket in his own four — DUE NOW, DUE LATER, DEFERRED, SCHEDULED. Triage of
+record, with Nexus node routing, the pseudocode call, and the three-point
+mirror table: `docs/foreman/EISENHOWER_A1_2026-11-17.md` (doc_id
+`SPD-FOREMAN-EISENHOWER-001`); working order mirrored into
+`docs/foreman/TOPICS.md`. Lines 14–18 were added by that walk — four of the
+five were invisible to this page before it. No tally marks added: no fix
+landed this session, and a walk is not a fix.
+
 ## C. How a line moves
 
 OPEN → owner UAT / foreman evidence → STRUCK (moved to Former-Bugs or

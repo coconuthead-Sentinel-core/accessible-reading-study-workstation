@@ -3,23 +3,45 @@
 *Reviewed 2026-06-27 against `aea48c8`. This is the operating manual for changing
 the code safely and keeping all copies in sync.*
 
-## 1. The three copies and the golden rule
+## 1. The four stations and the golden rule
 
-Because the Desktop lives **inside OneDrive**, there are effectively three
-representations of the project:
+*Rewritten 2026-11-17 (punch #16) — this section previously described three
+copies and named `OneDrive\Desktop\Sentinel-Forge` as the live install. Both
+facts were stale. The board-clearing walk found four stations, two of them
+out of compliance.*
 
 ```
-   ┌──────────────────────────────┐
-   │  LIVE INSTALL (= laptop copy) │   C:\Users\sbrya\OneDrive\Desktop\Sentinel-Forge
-   │  also the OneDrive-synced copy│   (laptop and OneDrive are the SAME files)
-   └───────────────┬──────────────┘
+   ┌───────────────────────────────┐
+   │  LIVE INSTALL (OneDrive)      │   C:\Users\sbrya\OneDrive\Sentinel personal development
+   │  what run_sentinel.bat starts │   (the desktop shortcut points here)
+   └───────────────┬───────────────┘
                    │ commit + push
                    ▼
-   ┌──────────────────────────────┐
+   ┌───────────────────────────────┐
    │  GitHub  main  (source of     │   github.com/coconuthead-Sentinel-core/
-   │  truth)                       │   sentinel-forge-personal-development
-   └──────────────────────────────┘
+   │  truth)                       │   accessible-reading-study-workstation
+   └───────────────┬───────────────┘
+                   │ pull
+                   ▼
+   ┌───────────────────────────────┐
+   │  LAPTOP station (NOT OneDrive)│   C:\Users\sbrya\Desktop\Sentinel personal Development
+   └───────────────────────────────┘
+   ┌───────────────────────────────┐
+   │  WORKTREE / old live install  │   C:\Users\sbrya\OneDrive\Desktop\Sentinel-Forge
+   └───────────────────────────────┘
 ```
+
+**Repo slug:** `accessible-reading-study-workstation` (renamed 2026-09-03;
+older links in the history sections below still carry the former
+`sentinel-forge-personal-development` slug and are left as written — the
+archive law applies to the record, not to the instructions).
+
+**The laptop Desktop is NOT the OneDrive Desktop.** `C:\Users\sbrya\Desktop`
+and `C:\Users\sbrya\OneDrive\Desktop` are different folders on this machine,
+and the project has a checkout in each. The old "laptop and OneDrive are the
+same files" shortcut is what let one station drift 109 commits behind
+unnoticed. Mirror agreement is an acceptance criterion (`docs/SCOPE.md` §3):
+every station reports the same hash, or the breach gets a punch line.
 
 **Golden rule (the project's standing workflow):**
 **edit the live install → commit → push to GitHub `main`.** GitHub `main` is the

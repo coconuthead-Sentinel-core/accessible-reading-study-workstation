@@ -36,3 +36,51 @@ EISENHOWER TRIAGE of punch items (2026-07-25)
     #6  Vault Catalog (archive sets + media index)
     #7  Script-export pipeline for narrated segments
 ```
+
+---
+
+## Board-clearing walk — 2026-11-17 (proprietor's order)
+
+Falcon One ordered the whole board cleared through the Eisenhower matrix
+in his own four buckets, filed in the A1 system. Full triage of record,
+with Nexus node routing and the three-point mirror table:
+**`docs/foreman/EISENHOWER_A1_2026-11-17.md`** (doc_id
+`SPD-FOREMAN-EISENHOWER-001`). Working summary:
+
+```text
+EISENHOWER TRIAGE of punch items (2026-11-17) — proprietor's buckets
+
+🔴 DUE NOW:
+    N1  Store-release scope SIGN-OFF ......... Falcon One  (forge-work,
+        PROPOSED since 2026-08-06, never boarded until now)
+    N2  #10 SUS baseline, cold ............... Falcon One  (oldest line)
+    N3  Review-Delete field question ......... Falcon One  (18 clicks
+        logged last night; code speaks its refusal — did he SEE it?)
+    N4  Laptop station 109 commits behind .... foreman, on his word
+    N5  Fourth station damaged (no entry pt) . Falcon One decides
+    N6  Wiki names the wrong live install ..... foreman
+    N7  180/198 files are OneDrive stubs ..... Falcon One (his disk)
+    N8  Re-verify the 536-test claim ......... foreman, next cycle
+
+⚪ DUE LATER — held by real constraints, not by choice:
+    L1  imaging node + portable container (hardware/funding)
+    L2  E: storm-shelter re-verify (drive not mounted at this walk)
+    L3  Imprint archive-ledger paperwork
+
+🟣 DEFERRED — behind the scope-first gate:
+    D1  #12 Prompt Fragment Vault (scope + pseudocode re-derived)
+    D2  #6  Vault Catalog          D3  #7 script-export
+    D4  C3  CleanroomIntake retrieval benchmark
+
+🟡 SCHEDULED — each with a named trigger:
+    S1  merge forge-work -> main ............. on N1
+    S2  Pomodoro -> "Focus Cycles" + gate .... on N1 (trademark)
+    S3  Sentinel-Forge.spec build repair ..... behind S2
+    S4  #13 Progress Observatory SCOPE doc ... next build cycle
+    S5  #11/C2 hub-window signage ............ on a scope call
+    S6  #4 residual 10-second spot-check ..... next dashboard visit
+
+PSEUDOCODE CALL: none owed. Every item that needs it sits behind an
+unsigned or unwritten scope statement. Next artifact owed is a scope
+statement, not pseudocode.
+```

@@ -34,9 +34,14 @@ what's next. Reviewed 2026-06-27 against `aea48c8`.*
 ## How to work on this project (orientation for a new assistant)
 
 1. **Sync rule is sacred:** edit the live install at
-   `C:\Users\sbrya\OneDrive\Desktop\Sentinel-Forge`, then **commit and push to
-   `main`**. Laptop and OneDrive are the same files. See
-   [Development Workflow](Development-Workflow.md).
+   `C:\Users\sbrya\OneDrive\Sentinel personal development`, then **commit and
+   push to `main`**. See [Development Workflow](Development-Workflow.md).
+   *Corrected 2026-11-17 (punch #16):* this line used to name
+   `OneDrive\Desktop\Sentinel-Forge`. That is no longer the live install —
+   the desktop shortcut, the running process, and HEAD all point at the path
+   above, and the old folder is 4 commits behind with its entry point
+   deleted. There are **four** stations now, not three; see §1 of the
+   workflow page.
 2. **Before committing:** `python -m py_compile sentinel_personal_development.py`
    then `python -m unittest discover -s tests`. Green or it doesn't ship.
 3. **Docs → `main` directly; risky code → branch → PR.**

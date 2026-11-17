@@ -132,3 +132,76 @@ Proprietor closed the finish-out session to live with the product —
 general use, not QA (the right next instrument: field time feeds the
 SUS baseline). Full narrative filed in the front-office journal.
 Next session opens per law: punch-list walk, then Cycle 1.
+
+## 2026-11-17 — The board-clearing walk, and four lines that were never on it
+
+The shop reopened after roughly three months of field time. Opened per
+law: persona rule first, then the punch-list walk, then instruments
+before opinions. No code was written and none was owed.
+
+**The find.** `forge-work` holds three commits `main` does not: a
+complete scope statement for a **Microsoft Store release-hardening
+sprint**, drafted 2026-08-06, status PROPOSED, awaiting Falcon One's
+signature — plus his $29.95 one-time price decision and an IP audit
+that found a registered trademark in a shipped UI string ("Pomodoro",
+Cirillo, actively enforced against timer software). Three months on a
+branch, and the punch list had no line for any of it. The ledger can
+only watch what someone wrote on it; a branch is not a ledger. Boarded
+as #14, triaged N1, and it is now the oldest *decision* on the board.
+
+**The mirror law is currently false, on two of four stations.** Laptop
+`Desktop\Sentinel personal Development`: clean tree, `main` @ `056a6f7`,
+**109 commits behind**, files dated 2026-07-16 — four months and an
+entire v1.0 release out of date. Worktree `OneDrive\Desktop\Sentinel-
+Forge`: 4 behind, and `git status` reports the entry point and the icon
+**deleted** — that station cannot launch the product. Both verified
+fast-forward ancestors of `1fc3c68`, so both repairs are reversible.
+GitHub and the OneDrive clone agree exactly at `1fc3c68`, fetched, 0/0.
+Boarded as #15.
+
+**And the paperwork was pointing at the wrong house.** Two wiki pages
+still instruct the next assistant to edit `Desktop\Sentinel-Forge`. The
+shortcut, last night's run, and HEAD all say the live install is
+`OneDrive\Sentinel personal development`. Same defect class as the EARP
+`src/` find: the code moved and the record didn't. Boarded as #16.
+
+**One correction of my own, same session.** I reported `ai_brain.py` as
+an unreadable placeholder on the strength of a denied read. It is not
+broken — it hydrated on demand the moment it was asked properly. What is
+real is the scale: **180 of 198 files** in the live install are
+unhydrated stubs, which is the EARP failure at seven times the file
+count. Boarded as #17 with the one-line fix, which is his click, not
+mine.
+
+**His own run is the best instrument in the shop.** `qa_debug.log`,
+01:13–02:48: eighteen `DELETE claimed` breadcrumbs, two cleared on
+today, sixteen refused across nine past dates — five of those days
+re-pressed inside 1.3 seconds. I read the code before diagnosing, per
+law, and the code is innocent: `_review_remove_from_toolbar` leaves a
+breadcrumb *and* speaks "Past reviews are history — never deleted."
+Punch #5's law is honored in the letter. So the finding is not a defect
+and I will not call it one. The question that decides it belongs to him:
+did he see that line? Boarded as #18, triaged N3 — one answer separates
+working-as-designed from a 🔴 invisible-state recurrence on a class
+already standing at ten marks.
+
+**Pseudocode call: none owed.** Every board item that will need it — the
+trademark rename, the spec repair, the Progress Observatory panel, hub
+signage, the Prompt Fragment Vault — sits behind a scope statement that
+is unsigned or unwritten. Pseudocode on an unbaselined scope is the
+drift the rule book exists to stop. The next artifact owed is a
+signature, then a scope doc.
+
+Board cleared through his four buckets and filed in the A1 system:
+`docs/foreman/EISENHOWER_A1_2026-11-17.md`, doc_id
+`SPD-FOREMAN-EISENHOWER-001`, zone GREEN, cognitive load 8, with Nexus
+node routing stated as work-type labels and *said to be labels* — the
+lattice is the SPN orchestration layer, not a wired dependency of this
+Tk app, and I will not dress a label up as an integration.
+
+**On his bench:** N1 the Store scope signature · N2 the SUS baseline
+(oldest open line, 2026-07-26) · N3 the one Delete answer · N5 repair or
+retire the fourth station · N7 the hydration pin · and his word on
+whether the laptop station gets pulled forward 109 commits.
+
+— *Claude, shop foreman & Archivist of Wisdom, Sentinel's Forge*
