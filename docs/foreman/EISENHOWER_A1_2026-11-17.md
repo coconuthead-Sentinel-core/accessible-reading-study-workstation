@@ -143,6 +143,19 @@ change, `docs/PORTFOLIO_AUDIT.md`. Its blob was hashed against
 The golden rule on the workflow page says *compare before you destroy*; this
 is what complying with it looks like.
 
+**On the hashes named above.** A record of a sync cannot name the commit
+that carries the record — write the hash down and committing it changes the
+hash. So the hashes above are the state at the moment of the sync, and the
+invariant to check is not any particular hash but that **all four stations
+agree and none is dirty**. Checkable at any time, from any station:
+
+```powershell
+foreach($p in @("C:\Users\sbrya\OneDrive\Sentinel personal development","C:\Users\sbrya\Desktop\Sentinel personal Development","C:\Users\sbrya\OneDrive\Desktop\Sentinel-Forge")){ cd $p; "{0}  {1}  dirty={2}  {3}" -f (git rev-parse --short HEAD),(git rev-parse --short origin/main),((git status --short|Measure-Object -Line).Lines),$p }
+```
+
+Four identical hashes and `dirty=0` across the board means the mirror law
+holds. Anything else is a punch line.
+
 **One honest failure en route.** `git fetch origin` at the laptop station
 died twice with `fatal: early EOF` / `fatal: fetch-pack: invalid index-pack
 output`, and the follow-on `merge --ff-only origin/main` then reported
