@@ -320,3 +320,48 @@ precondition too — sufficient value separation — and "drawn" is not
   that spun for minutes on the 18k-line source — rewritten as a
   line-based scan; pattern-match complexity is part of a gate's
   design, too.
+
+---
+
+## 2026-11-17 — "Already up to date" from a station whose fetch had just failed
+
+**Class:** a decline that reads like a success — the same family as the
+red-plum "precondition quietly false", but one level up, in the tooling
+rather than the app.
+
+**What happened.** Bringing the laptop station forward 109 commits,
+`git fetch origin` failed twice:
+
+```
+fatal: early EOF
+fatal: fetch-pack: invalid index-pack output
+```
+
+The very next command, `git merge --ff-only origin/main`, reported
+**"Already up to date."** It was not. That station's *cached* `origin/main`
+ref still equalled its own stale HEAD, so the merge was perfectly correct
+about a remote-tracking ref that was four months out of date. Taking git at
+its word would have produced a false report: a station declared synced that
+had not moved a single commit.
+
+**Root cause.** `merge --ff-only origin/main` tests the local *cache* of the
+remote, not the remote. A failed fetch leaves that cache intact, so the two
+commands together form a silent-success path: the failure is printed, the
+success is printed after it, and the second one looks like the conclusion.
+
+**The fix used.** Fetched from the OneDrive repository over local disk
+instead of the network (same objects, no pack transfer), then verified by
+hashing `sentinel_personal_development.py` at every station rather than
+reading a reassuring sentence.
+
+**Rule earned — foreman practice, enacted 2026-11-17 under the owner's
+clear-the-board order.** *Never accept "Already up to date" from a station
+whose fetch just failed.* Check the tracking ref against the remote you
+actually trust, and confirm a sync by hash, never by message. Promoting this
+into the user-level `shop-defect-laws` skill is the proprietor's call —
+standing rules at that level are his to set; this page records it as shop
+practice in the meantime.
+
+**Lesson, stated the way the shop states them:** a tool that reports success
+about the wrong question is more dangerous than one that errors, because the
+error at least stops you.
