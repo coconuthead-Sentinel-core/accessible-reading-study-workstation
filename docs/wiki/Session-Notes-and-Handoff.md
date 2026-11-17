@@ -6,14 +6,33 @@ what's next. Reviewed 2026-06-27 against `aea48c8`.*
 
 ---
 
-## ⏱ Current state at a glance (as of 2026-06-27 — superseded; see July 2026 block at the end)
+## ⏱ Current state at a glance — re-measured 2026-11-17
+
+- **Version:** **v1.0.0**, released 2026-07-25 (tag `v1.0.0`; `v0.9-rc1` also
+  present). Project declared COMPLETE by the owner 2026-07-30 — the shop is
+  in **maintenance mode**: warranty fixes in daily use, fresh scope required
+  for anything new.
+- **Suite:** **536 tests, OK, 14 skipped, 97.8 s**, measured this session
+  across 53 test modules — demonstrated, not quoted.
+- **Stations:** four, all at one commit, all clean, app file byte-identical.
+  The live install is `C:\Users\sbrya\OneDrive\Sentinel personal development`.
+  See [Development Workflow](Development-Workflow.md) §1 — and note that
+  `C:\Users\sbrya\Desktop` is **not** `C:\Users\sbrya\OneDrive\Desktop`.
+- **Entry point:** `sentinel_personal_development.py` (run `run_sentinel.bat`).
+  28,537 lines · 2 classes · 1,104 functions · `BookReader` at 667 methods.
+- **Open work:** the board is `docs/wiki/Shop-Punch-List.md`; the triage of
+  record is `docs/foreman/EISENHOWER_A1_2026-11-17.md`. One sprint is
+  baselined and not started: `docs/SCOPE_STORE_RELEASE.md`.
+
+<details><summary>Superseded snapshot (2026-06-27) — kept as the record of the road</summary>
 
 - **Branch:** `main` · **HEAD:** `aea48c8` · clean, laptop = OneDrive = GitHub.
 - **Version:** v0.9 (release-candidate track). **Tests:** 34/34 passing.
 - **Phase:** stabilization / hardening. **Feature freeze recommended** — resist
   adding new panels; finish the [exit criteria](SDLC-and-Process.md#5-exit-criteria-before-stakeholder-handoff).
-- **Entry point:** `sentinel_personal_development.py` (run `run_sentinel.bat`).
 - **Total commits:** 208.
+
+</details>
 
 ### Top of the to-do list (highest leverage first)
 1. **Add CI** — a GitHub Actions workflow running `py_compile` + `unittest` on

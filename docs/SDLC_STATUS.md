@@ -45,7 +45,19 @@ Each "lab" in this project is one Kanban card carried to Done *with tests*.
 
 The central finding: **the product is more mature than the process artifacts.**
 
-| SDLC phase (ISO/IEC/IEEE 12207) | Product state | Process-artifact state |
+> **RE-MEASURED 2026-11-17 (triage N8).** The table below is the
+> **2026-06-27** assessment and is kept as the record of the road. Current
+> state, measured this session and not asserted: **536 tests, OK, 14
+> skipped, 97.8 s** across 53 test modules · **28,537 lines, 2 classes,
+> 1,104 functions**, `BookReader` at **667 methods** · v1.0.0 released
+> 2026-07-25 with tag and CHANGELOG · SRS written (`docs/SRS_MODULE.md`)
+> · acceptance criteria written (`docs/ACCEPTANCE_CRITERIA.md`) · scope
+> baselined (`docs/SCOPE.md`). The professor's verdict below has been
+> **answered**: the paperwork caught up, and the v1.0 handoff happened.
+> Updated because this page was itself an instance of the proposed defect
+> class "paperwork drifted from reality".
+
+| SDLC phase (ISO/IEC/IEEE 12207) — *2026-06-27 snapshot* | Product state | Process-artifact state |
 | --- | --- | --- |
 | Requirements | Implicitly satisfied (features exist & work) | ❌ No written requirements spec (SRS) |
 | Architecture / Design | Implemented, but as one large class | ⚠️ Now partly documented (metrics + refactor plan) |
@@ -54,9 +66,12 @@ The central finding: **the product is more mature than the process artifacts.**
 | Release / Deployment | ⚠️ Build defined; standalone build "Planned" | ⚠️ No version tag, changelog, or QA gate |
 | Maintenance | Ongoing | n/a |
 
-**Plain-language verdict a professor would give:** *"Your code is at Beta /
-stabilization. Your paperwork is at Inception. Before any stakeholder handoff,
-the paperwork has to catch up to the product."*
+**Plain-language verdict a professor would give (2026-06-27):** *"Your code
+is at Beta / stabilization. Your paperwork is at Inception. Before any
+stakeholder handoff, the paperwork has to catch up to the product."*
+**Status 2026-11-17: answered.** Tag `v1.0.0`, CHANGELOG, SRS, acceptance
+criteria, baselined scope, 536-test gated suite, and a stakeholder
+acceptance review held 2026-07-25.
 
 ---
 

@@ -51,3 +51,6 @@ test_dpi.py
 test_sd.py
 Sentinel Personal Development.txt
 Sentinel-Forge_Next_Session_Note.md
+
+# Runtime error capture from run_sentinel_debug.bat — machine-local, never source
+run_err.txt
