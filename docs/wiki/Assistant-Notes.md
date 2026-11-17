@@ -462,6 +462,12 @@ dashboards.
   track is CLOSED at good — deliberately before over-decoration.
   Standing law reaffirmed: more elements = distraction. No further
   art without a fresh order.
+- ⏳ 2026-08-06 — SCOPE CHANGE PROPOSED (scope-first §2 log line): add a
+  **Microsoft Store distribution channel** — release-hardening sprint
+  scoped in `docs/SCOPE_STORE_RELEASE.md` (build repair, portability
+  pass, privacy policy, MSIX, WACK, one-time-price listing; subscriptions
+  and mobile explicitly OUT). Awaiting Falcon One sign-off; no code
+  moves until the baseline is signed.
 - (empty — Shannon or the assistant may append instructions here; the
   next README check executes them)
 
