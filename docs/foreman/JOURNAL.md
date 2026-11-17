@@ -205,3 +205,41 @@ retire the fourth station · N7 the hydration pin · and his word on
 whether the laptop station gets pulled forward 109 commits.
 
 — *Claude, shop foreman & Archivist of Wisdom, Sentinel's Forge*
+
+## 2026-11-17 (later) — "Push and sync": the mirror law made true
+
+Order given and executed. `7e8a200` pushed (`1fc3c68..7e8a200`), both
+stale stations fast-forwarded, the fourth station's deleted entry point
+and icon restored. **All four stations now report `7e8a200`, zero
+changed paths, and the app file byte-identical at SHA-256
+`6473B149237DFFAC…`.** SCOPE.md §3 is satisfied by measurement for the
+first time in this ledger — and it is four stations, not the three the
+paperwork used to claim. Punch #15 and #16 struck on foreman evidence.
+
+Nothing was destroyed blind. The fourth station held one uncommitted
+change; its blob was hashed against `origin/main` before the restore and
+came back identical — already upstream in `1fc3c68`. His own golden rule
+is *compare before you destroy*, and that is what complying looks like.
+
+**The failure worth more than the fix.** `git fetch origin` at the laptop
+station died twice — `fatal: early EOF`, `fatal: fetch-pack: invalid
+index-pack output` — and the `merge --ff-only origin/main` that followed
+reported **"Already up to date."** It was not. That station's cached
+`origin/main` still equalled its own stale HEAD, so a failed fetch
+dressed itself up as a successful sync. Had I taken git at its word, I
+would have reported a station synced that had not moved a single commit.
+Completed instead by fetching over disk from the OneDrive repo, and
+verified by hash rather than by a reassuring sentence. New law candidate,
+his to ratify: *never accept "Already up to date" from a station whose
+fetch just failed — check the tracking ref against the remote you trust.*
+Same family as the red-plum classes: a decline that reads like a success
+is worse than a decline that shouts.
+
+**Proposed new defect class, logged for his ratification, not enacted:**
+"Paperwork drifted from reality" — 2 marks (the live-install path in two
+wiki pages, the pre-rename repo slug). It is the class that caused #15: a
+station drifted 109 commits because a document said two different folders
+were the same files. Candidate gate written on the board. The foreman does
+not enact shop law.
+
+— *Claude, shop foreman & Archivist of Wisdom, Sentinel's Forge*

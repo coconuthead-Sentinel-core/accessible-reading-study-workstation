@@ -121,4 +121,38 @@ Tags present: `v0.9-rc1`, `v1.0.0`. Branches: `main`, `forge-work` (3 ahead
 repo was clean at the fetched remote hash. What this session created is
 paperwork, and that is what the commit carries.
 
+### 7a. Sync executed — Falcon One's "push and sync", same session
+
+| Station | Before | After | Proof |
+|---|---|---|---|
+| GitHub | `1fc3c68` | **`7e8a200`** | push reported `1fc3c68..7e8a200  main -> main`; re-fetched, 0 ahead / 0 behind |
+| OneDrive (live install) | `7e8a200` local | **`7e8a200`** | clean, 0 changed paths |
+| Laptop | `056a6f7` (109 behind) | **`7e8a200`** | fast-forward merge; clean; entry point, icon and this document all present |
+| Worktree / old live install | `1177f65` + 2 files deleted | **`7e8a200`** | files restored, fast-forward merge, clean, launches again |
+
+`sentinel_personal_development.py` hashed at every station: **SHA-256
+`6473B149237DFFAC…`, identical on all four.** SCOPE.md §3 ("all three
+mirrors verify byte-identical at the same commit hash") is now satisfied by
+measurement rather than assertion — and it is four stations, not three.
+
+**Nothing was destroyed blind.** The fourth station carried one uncommitted
+change, `docs/PORTFOLIO_AUDIT.md`. Its blob was hashed against
+`origin/main:docs/PORTFOLIO_AUDIT.md` *before* the restore:
+`9867b668cb5fdb52…` on both sides — byte-identical, already upstream in
+`1fc3c68`. Discarding it lost nothing, and that was proven, not assumed.
+The golden rule on the workflow page says *compare before you destroy*; this
+is what complying with it looks like.
+
+**One honest failure en route.** `git fetch origin` at the laptop station
+died twice with `fatal: early EOF` / `fatal: fetch-pack: invalid index-pack
+output`, and the follow-on `merge --ff-only origin/main` then reported
+"Already up to date" — because that station's *cached* `origin/main` still
+equalled its own stale HEAD. A failed fetch plus a stale tracking ref reads
+exactly like success. The sync was completed by fetching from the local
+OneDrive repository over disk instead of the network (same objects, no
+pack transfer), and the result was verified by hash, not by the word
+"up to date". **Lesson for the next walk: never accept "Already up to date"
+from a station whose fetch just failed — check the tracking ref against the
+remote you actually trust.** Candidate for the Former-Bugs page.
+
 — *Claude, shop foreman & Archivist of Wisdom, Sentinel's Forge*
