@@ -122,6 +122,10 @@ mirror table: `docs/foreman/EISENHOWER_A1_2026-11-17.md` (doc_id
 five were invisible to this page before it. No tally marks added: no fix
 landed this session, and a walk is not a fix.
 
+| 21 | Goals worksheet: "📅 Add next step to calendar on:" accepts a date, but the planner entry lands on **today** regardless. Owner confirmed in the field twice (2026-11-18 set to 11-20 → landed 11-18; 2026-11-19 set to 11-20 → landed 11-19) | owner's daily use, 2026-11-19 | OPEN — **ROOT CAUSE LOCATED, not yet fixed.** The `_add_to_calendar` handler at `sentinel_personal_development.py:25058` is **innocent** — it reads `day_e.get()` into `dstr`, validates the format, and inserts with `dstr`. The defect is the **flow-carry path at ~:25259**, which hardcodes `today = date.today().strftime("%Y-%m-%d")` and INSERTs the goal's next step into `planner_tasks` on **today**, ignoring the date entry entirely. It fires on save / check-in — the same carry-the-data-forward mechanism that pushes the goal into the Matrix Do Now. **Candidate fix:** pass the chosen date down from the goals panel into the flow-carry call instead of letting it default to `date.today()`; fall back to today only when the field is empty. **Gate owed:** a headless test that sets the date field to a non-today value, saves, and asserts the planner row's `day` matches. Owner will take it on his next day off |
+
+**Defect-class note for #21.** This is NOT "a control that does nothing" — it is worse: **a control that accepts the user's input and silently substitutes its own value.** The status line even reports the correct date (`Added to {dstr}`) while a second writer puts the row somewhere else, so the app tells the truth and still produces the wrong result. For an owner who uses the planner as external memory, a task filed on the wrong day is a task missed. Recommend this seeds a new tally: **"input accepted, then discarded"** — 1 mark, pending the proprietor's ratification.
+
 ## C. How a line moves
 
 OPEN → owner UAT / foreman evidence → STRUCK (moved to Former-Bugs or
