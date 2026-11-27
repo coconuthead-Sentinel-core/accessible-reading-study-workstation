@@ -29,6 +29,9 @@ SIGNS: dict[str, Sign] = {
     # DELEGATE, X DELETE — the four quadrants ride under the big word.
     "matrix":      Sign("△ ⏱ ⚒ ✕", "PRIORITY MATRIX"),
     "planner":     Sign("🗓", "PLANNER"),
+    # The grid room: a card at a coordinate. Picture and word together,
+    # like every other door plate.
+    "grid":        Sign("🗂", "CARD GRID"),
 }
 
 

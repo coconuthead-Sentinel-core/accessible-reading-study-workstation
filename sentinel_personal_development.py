@@ -31,6 +31,8 @@ from lyceum.db.study_db import (
     init_study_db,
     transaction as _db_transaction,
 )
+from lyceum import grid_cards
+from lyceum.db import study_db
 from lyceum.metrics import wheel_progress, progress_pct
 from lyceum.text_norm import normalize_for_speech
 from lyceum.dictation_commands import apply_dictation_commands
@@ -18604,6 +18606,7 @@ class BookReader:
             ("journal",     "📅 Journal",     self._build_tab_journal),
             ("matrix",      "🎯 Matrix",      self._build_tab_eisenhower),
             ("planner",     "🗓 Planner",     self._build_tab_planner),
+            ("grid",        "🗂 Card Grid", self._build_tab_grid),
         ]
         for key, label, builder in tabs:
             b = tk.Button(
@@ -23693,6 +23696,250 @@ class BookReader:
     # table (one row per quadrant). Edits debounce-save after 1.5 s, and
     # closing the Study window force-saves any pending changes.
     # ---- Daily Planner (Sunsama-style week of day-columns) -------------
+    # -- Card Grid ---------------------------------------------------------
+    # Note cards at a coordinate. The rules live in lyceum/grid_cards.py and
+    # the rows in study_db; this draws them and decides nothing -- no address
+    # is computed here, because a second copy of that rule would be the
+    # untested one.
+
+    def _build_tab_grid(self, parent: tk.Frame) -> None:
+        head = tk.Frame(parent, bg=BG_PANEL, padx=12, pady=8)
+        head.pack(fill=tk.X)
+        tk.Label(head, text="\U0001F5C2 Card Grid", bg=BG_PANEL, fg=FG_TEXT,
+                 font=("Segoe UI", 13, "bold")).pack(side=tk.LEFT)
+        self._grid_stats_var = tk.StringVar(value="")
+        tk.Label(head, textvariable=self._grid_stats_var, bg=BG_PANEL,
+                 fg=FG_MUTED, font=("Segoe UI", 10)).pack(side=tk.RIGHT)
+
+        # One box, two jobs: a cell jumps, words search. The fork is the
+        # kernel's (grid_cards.find), never the widget's.
+        row = tk.Frame(parent, bg=BG_DARK, padx=12, pady=6)
+        row.pack(fill=tk.X)
+        tk.Label(row, text="Find:", bg=BG_DARK, fg=FG_MUTED,
+                 font=("Segoe UI", 11)).pack(side=tk.LEFT, padx=(0, 6))
+        self._grid_search_var = tk.StringVar()
+        ent = tk.Entry(row, textvariable=self._grid_search_var, bg=BG_INPUT,
+                       fg=FG_TEXT, insertbackground=FG_TEXT,
+                       font=("Segoe UI", 11), relief=tk.FLAT, bd=0)
+        ent.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=4)
+        ent.bind("<Return>", lambda _e: self._grid_refresh())
+        tk.Button(row, text="Search", command=self._grid_refresh,
+                  bg=BG_INPUT, fg=FG_TEXT, relief=tk.FLAT, padx=10,
+                  cursor="hand2", font=("Segoe UI", 10)).pack(side=tk.LEFT,
+                                                              padx=4)
+        tk.Button(row, text="Show all",
+                  command=lambda: (self._grid_search_var.set(""),
+                                   self._grid_refresh()),
+                  bg=BG_INPUT, fg=FG_TEXT, relief=tk.FLAT, padx=10,
+                  cursor="hand2", font=("Segoe UI", 10)).pack(side=tk.LEFT)
+
+        # Reading order. Across reads A1, B1, C1 then drops down; down reads
+        # A1, A2, A3 then moves right. Same cards, different neighbours side
+        # by side -- which is the reason to use a grid and not a list.
+        self._grid_order = grid_cards.ROW_MAJOR
+        self._grid_order_btn = tk.Button(
+            row, text="Reading: across", command=self._grid_toggle_order,
+            bg=BG_INPUT, fg=FG_TEXT, relief=tk.FLAT, padx=10, cursor="hand2",
+            font=("Segoe UI", 10))
+        self._grid_order_btn.pack(side=tk.RIGHT)
+
+        body = tk.Frame(parent, bg=BG_DARK, padx=12)
+        body.pack(fill=tk.BOTH, expand=True)
+        sb = tk.Scrollbar(body, orient=tk.VERTICAL)
+        sb.pack(side=tk.RIGHT, fill=tk.Y)
+        self._grid_listbox = tk.Listbox(
+            body, bg=BG_INPUT, fg=FG_TEXT, selectbackground=ACCENT_SLATE,
+            selectforeground="white", relief=tk.FLAT, bd=0,
+            font=("Consolas", 11), activestyle="none",
+            yscrollcommand=sb.set, exportselection=False)
+        self._grid_listbox.pack(fill=tk.BOTH, expand=True, pady=(0, 8))
+        sb.config(command=self._grid_listbox.yview)
+        self._grid_listbox.bind("<<ListboxSelect>>", self._grid_on_select)
+        self._grid_rows = []
+
+        form = tk.Frame(parent, bg=BG_PANEL, padx=12, pady=8)
+        form.pack(fill=tk.X)
+
+        r1 = tk.Frame(form, bg=BG_PANEL)
+        r1.pack(fill=tk.X, pady=2)
+        tk.Label(r1, text="Cell:", bg=BG_PANEL, fg=FG_MUTED, width=6,
+                 anchor="w", font=("Segoe UI", 10)).pack(side=tk.LEFT)
+        self._grid_cell_var = tk.StringVar()
+        tk.Entry(r1, textvariable=self._grid_cell_var, width=8, bg=BG_INPUT,
+                 fg=FG_TEXT, insertbackground=FG_TEXT, relief=tk.FLAT, bd=0,
+                 font=("Consolas", 11)).pack(side=tk.LEFT, ipady=3)
+        tk.Label(r1, text="Title:", bg=BG_PANEL, fg=FG_MUTED, anchor="w",
+                 font=("Segoe UI", 10)).pack(side=tk.LEFT, padx=(10, 4))
+        self._grid_title_var = tk.StringVar()
+        tk.Entry(r1, textvariable=self._grid_title_var, bg=BG_INPUT,
+                 fg=FG_TEXT, insertbackground=FG_TEXT, relief=tk.FLAT, bd=0,
+                 font=("Segoe UI", 11)).pack(side=tk.LEFT, fill=tk.X,
+                                             expand=True, ipady=3)
+
+        r2 = tk.Frame(form, bg=BG_PANEL)
+        r2.pack(fill=tk.X, pady=2)
+        tk.Label(r2, text="Note:", bg=BG_PANEL, fg=FG_MUTED, width=6,
+                 anchor="nw", font=("Segoe UI", 10)).pack(side=tk.LEFT,
+                                                          anchor="n")
+        self._grid_body_widget = tk.Text(
+            r2, height=3, bg=BG_INPUT, fg=FG_TEXT, insertbackground=FG_TEXT,
+            relief=tk.FLAT, bd=0, font=("Segoe UI", 11), wrap=tk.WORD)
+        self._grid_body_widget.pack(fill=tk.X, expand=True, pady=2)
+
+        r3 = tk.Frame(form, bg=BG_PANEL)
+        r3.pack(fill=tk.X, pady=2)
+        tk.Label(r3, text="Zone:", bg=BG_PANEL, fg=FG_MUTED, width=6,
+                 anchor="w", font=("Segoe UI", 10)).pack(side=tk.LEFT)
+        self._grid_zone_var = tk.StringVar(value="")
+        tk.OptionMenu(r3, self._grid_zone_var, "",
+                      *grid_cards.ZONES).pack(side=tk.LEFT)
+        tk.Label(r3, text="Load:", bg=BG_PANEL, fg=FG_MUTED,
+                 font=("Segoe UI", 10)).pack(side=tk.LEFT, padx=(10, 4))
+        self._grid_load_var = tk.StringVar(value="")
+        tk.Entry(r3, textvariable=self._grid_load_var, width=4, bg=BG_INPUT,
+                 fg=FG_TEXT, insertbackground=FG_TEXT, relief=tk.FLAT, bd=0,
+                 font=("Segoe UI", 11)).pack(side=tk.LEFT, ipady=3)
+        tk.Label(r3, text="(leave the zone blank and the load picks it, "
+                          "same as excerpts)",
+                 bg=BG_PANEL, fg=FG_MUTED,
+                 font=("Segoe UI", 9)).pack(side=tk.LEFT, padx=8)
+        tk.Button(r3, text="File it", command=self._grid_save,
+                  bg=ACCENT_SLATE, fg="white", relief=tk.FLAT, padx=14,
+                  pady=3, cursor="hand2",
+                  font=("Segoe UI", 10, "bold")).pack(side=tk.RIGHT)
+        tk.Button(r3, text="Clear form", command=self._grid_clear_form,
+                  bg=BG_INPUT, fg=FG_TEXT, relief=tk.FLAT, padx=10,
+                  cursor="hand2",
+                  font=("Segoe UI", 10)).pack(side=tk.RIGHT, padx=6)
+
+        self._grid_status_var = tk.StringVar(value="")
+        tk.Label(form, textvariable=self._grid_status_var, bg=BG_PANEL,
+                 fg=FG_MUTED, anchor="w", justify="left",
+                 font=("Segoe UI", 10)).pack(fill=tk.X, pady=(4, 0))
+
+        self._grid_refresh()
+
+    def _grid_toggle_order(self) -> None:
+        self._grid_order = (grid_cards.COLUMN_MAJOR
+                            if self._grid_order == grid_cards.ROW_MAJOR
+                            else grid_cards.ROW_MAJOR)
+        self._grid_order_btn.config(
+            text=("Reading: down"
+                  if self._grid_order == grid_cards.COLUMN_MAJOR
+                  else "Reading: across"))
+        self._grid_refresh()
+
+    def _grid_refresh(self) -> None:
+        """Redraw the list from the store.
+
+        Reads every time rather than caching: a card filed a moment ago
+        must appear now, or the cabinet is lying about its own contents.
+        """
+        try:
+            all_rows = study_db.grid_cards_all()
+        except Exception as exc:                       # pragma: no cover
+            self._grid_status_var.set("Could not read the grid: %s" % exc)
+            return
+        query = self._grid_search_var.get().strip()
+        rows = (grid_cards.find(all_rows, query, self._grid_order) if query
+                else grid_cards.walk(all_rows, self._grid_order))
+        self._grid_rows = rows
+        self._grid_listbox.delete(0, tk.END)
+        for card in rows:
+            self._grid_listbox.insert(tk.END, grid_cards.describe(card))
+        if not rows:
+            self._grid_listbox.insert(
+                tk.END, ("  nothing matches that" if query
+                         else "  no cards yet -- file one below"))
+        free = grid_cards.next_free(all_rows, self._grid_order)
+        self._grid_stats_var.set("%d filed - next free %s"
+                                 % (len(all_rows), free))
+        # Offer the next free cell rather than making him remember what is
+        # taken: the question behind "is H5 free" is "where do I put this".
+        if not self._grid_cell_var.get():
+            self._grid_status_var.set("Next free cell: %s" % free)
+
+    def _grid_on_select(self, _event=None) -> None:
+        """Load the chosen card into the form, and name its neighbours.
+
+        One form files and edits. Two forms would be two places for the
+        same rule to drift.
+        """
+        sel = self._grid_listbox.curselection()
+        if not sel or sel[0] >= len(self._grid_rows):
+            return
+        card = self._grid_rows[sel[0]]
+        self._grid_cell_var.set(card.get("cell", ""))
+        self._grid_title_var.set(card.get("title", ""))
+        self._grid_body_widget.delete("1.0", tk.END)
+        self._grid_body_widget.insert("1.0", card.get("body", "") or "")
+        self._grid_zone_var.set(card.get("zone", "") or "")
+        load = card.get("load")
+        self._grid_load_var.set("" if load is None else str(load))
+        try:
+            near = grid_cards.neighbours(study_db.grid_cards_all(),
+                                         card["cell"])
+        except ValueError:                             # pragma: no cover
+            return
+        around = ["%s %s" % (d, c["cell"]) for d, c in near.items() if c]
+        self._grid_status_var.set(
+            "Around it: " + ", ".join(around) if around
+            else "Nothing filed next to it yet.")
+
+    def _grid_clear_form(self) -> None:
+        self._grid_cell_var.set("")
+        self._grid_title_var.set("")
+        self._grid_body_widget.delete("1.0", tk.END)
+        self._grid_zone_var.set("")
+        self._grid_load_var.set("")
+        self._grid_listbox.selection_clear(0, tk.END)
+        self._grid_refresh()
+
+    def _grid_save(self) -> None:
+        """File or update one card. A rejection says WHY, naming the field.
+
+        Swallowing the error and saving something nearly right is how a
+        grid fills with rows the owner did not mean.
+        """
+        cell = self._grid_cell_var.get().strip()
+        if not cell:
+            cell = grid_cards.next_free(study_db.grid_cards_all(),
+                                        self._grid_order)
+        load_text = self._grid_load_var.get().strip()
+        zone = self._grid_zone_var.get().strip() or None
+        now = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+        try:
+            existing = (study_db.grid_card_at(cell)
+                        if grid_cards.is_cell(cell) else None)
+            card = grid_cards.new_card(
+                cell, self._grid_title_var.get(),
+                self._grid_body_widget.get("1.0", tk.END).strip(),
+                (existing or {}).get("created_at") or now,
+                zone=zone,
+                load=(int(load_text) if load_text else None))
+        except (ValueError, TypeError) as exc:
+            self._grid_status_var.set(str(exc))
+            return
+        if existing:
+            card["updated_at"] = now
+        try:
+            study_db.save_grid_card(card)
+        except Exception as exc:                       # pragma: no cover
+            self._grid_status_var.set("Could not file it: %s" % exc)
+            return
+        verb = "Updated" if existing else "Filed"
+        self._grid_cell_var.set("")
+        self._grid_title_var.set("")
+        self._grid_body_widget.delete("1.0", tk.END)
+        self._grid_load_var.set("")
+        self._grid_refresh()
+        # AFTER the refresh, not before: _grid_refresh sets its own status
+        # line, so a confirmation written first is overwritten and the owner
+        # never sees that his card landed. Found in a live mainloop -- a
+        # headless check would have reported both set() calls succeeding.
+        self._grid_status_var.set("%s %s" % (verb, grid_cards.describe(card)))
+
+
     def _build_tab_planner(self, parent: tk.Frame) -> None:
         """A daily planner inspired by Sunsama: a week of day-columns. Add
         tasks (with a time estimate) to any day, check them off, and see each
