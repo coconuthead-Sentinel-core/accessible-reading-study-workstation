@@ -23747,6 +23747,16 @@ class BookReader:
             font=("Segoe UI", 10))
         self._grid_order_btn.pack(side=tk.RIGHT)
 
+        # The form is packed to the BOTTOM *before* the list, on purpose.
+        # Tk hands space out in packing order, so a list packed first with
+        # expand=True takes the whole cavity and everything after it lands
+        # below the window edge -- which is exactly what happened: the
+        # owner pressed Add, the handler ran and prefilled the cell, and
+        # the form holding it was off-screen. Reserve the form, let the
+        # LIST shrink. (Same class as FB-015; FB-005 before that.)
+        form = tk.Frame(parent, bg=BG_PANEL, padx=12, pady=8)
+        form.pack(side=tk.BOTTOM, fill=tk.X)
+
         body = tk.Frame(parent, bg=BG_DARK, padx=12)
         body.pack(fill=tk.BOTH, expand=True)
         sb = tk.Scrollbar(body, orient=tk.VERTICAL)
@@ -23760,9 +23770,6 @@ class BookReader:
         sb.config(command=self._grid_listbox.yview)
         self._grid_listbox.bind("<<ListboxSelect>>", self._grid_on_select)
         self._grid_rows = []
-
-        form = tk.Frame(parent, bg=BG_PANEL, padx=12, pady=8)
-        form.pack(fill=tk.X)
 
         r1 = tk.Frame(form, bg=BG_PANEL)
         r1.pack(fill=tk.X, pady=2)
