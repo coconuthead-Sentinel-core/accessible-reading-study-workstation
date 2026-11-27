@@ -7,6 +7,7 @@ import sqlite3
 import sys
 import tempfile
 
+from lyceum import grid_cards
 from lyceum.db import db_location
 
 # STUDY_DIR holds user sidecar content (excerpts, session.json, HANDOFF, Workflow)
@@ -817,6 +818,11 @@ def init_study_db() -> None:
     try:
         con = connect()
         con.executescript(STUDY_SCHEMA)
+        # Note cards on the A1 grid. Additive, and the schema comes from
+        # the kernel that owns the rules rather than being retyped here --
+        # a second copy of a schema drifts from the first, and the drift
+        # is silent until a row will not read.
+        con.executescript(grid_cards.GRID_SCHEMA)
         # Lightweight migration: add baseline/target columns to an older goals
         # table (CREATE IF NOT EXISTS won't add columns to an existing table).
         try:
@@ -912,3 +918,72 @@ def transaction():
             yield con
     finally:
         con.close()
+
+# ── note cards on the A1 grid ────────────────────────────────────────────
+# Rules live in lyceum/grid_cards.py. These move dicts in and out and decide
+# nothing: a reader asking what a cell MEANS goes to the kernel, a reader
+# asking where it is STORED stays here.
+#
+# Not memory_cards. Those are FSRS flashcards — scheduled, reviewed, due.
+# These are filing: a place to put a thought so it can be found again by a
+# coordinate. A grid card is never scheduled and never becomes due.
+
+_GRID_COLS = "cell, title, body, zone, load, created_at, updated_at"
+
+
+def _grid_row(row) -> dict:
+    """One sqlite tuple as the dict the kernel expects."""
+    return dict(zip(_GRID_COLS.replace(" ", "").split(","), row))
+
+
+def save_grid_card(card: dict) -> str:
+    """Write a card. The cell is UNIQUE, so this replaces by address.
+
+    Two cards at H5 would make "go to H5" ambiguous, which defeats the
+    whole point of an address — so the address, not a row id, is what
+    identity means here.
+    """
+    db_exec(
+        f"INSERT INTO grid_cards ({_GRID_COLS}) VALUES (?, ?, ?, ?, ?, ?, ?) "
+        "ON CONFLICT(cell) DO UPDATE SET "
+        "title=excluded.title, body=excluded.body, zone=excluded.zone, "
+        "load=excluded.load, updated_at=excluded.updated_at",
+        (card["cell"], card["title"], card.get("body", ""), card["zone"],
+         card.get("load"), card["created_at"], card.get("updated_at")),
+    )
+    return card["cell"]
+
+
+def grid_cards_all() -> list[dict]:
+    """Every card. Order is the caller's business — the owner has two
+    reading directions and the store must not pick one for him."""
+    return [_grid_row(r) for r in
+            db_query(f"SELECT {_GRID_COLS} FROM grid_cards")]
+
+
+def grid_card_at(cell: str):
+    """One card by address, or None."""
+    rows = db_query(f"SELECT {_GRID_COLS} FROM grid_cards WHERE cell = ?",
+                    (str(cell).upper(),))
+    return _grid_row(rows[0]) if rows else None
+
+
+def save_grid_link(link: dict) -> int:
+    """Join two cards. Append-only; a link is a fact about a moment."""
+    return db_exec(
+        "INSERT INTO grid_card_links (src, dst, relation) VALUES (?, ?, ?)",
+        (link["src"], link["dst"], link["relation"]),
+    )
+
+
+def grid_links(cell: str | None = None) -> list[dict]:
+    """Links, optionally only those touching one card."""
+    sql = "SELECT src, dst, relation FROM grid_card_links"
+    params: tuple = ()
+    if cell is not None:
+        sql += " WHERE src = ? OR dst = ?"
+        up = str(cell).upper()
+        params = (up, up)
+    sql += " ORDER BY id"
+    return [{"src": r[0], "dst": r[1], "relation": r[2]}
+            for r in db_query(sql, params)]
