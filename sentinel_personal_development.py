@@ -1978,6 +1978,8 @@ class BookReader:
         if not self._study_workspace_visible():
             return False
         tab = getattr(self, "_study_active_tab", None)
+        if tab == "grid":
+            return self._grid_add_from_toolbar()
         if tab == "topics":
             self._create_new_topic()
             return True
@@ -2002,6 +2004,8 @@ class BookReader:
         if self._matrix_remove_task_line():
             return
         if self._journal_remove_entry_from_toolbar():
+            return
+        if self._grid_remove_from_toolbar():
             return
         if self._study_notes_remove_from_toolbar():
             return
@@ -23771,10 +23775,15 @@ class BookReader:
         tk.Label(r1, text="Title:", bg=BG_PANEL, fg=FG_MUTED, anchor="w",
                  font=("Segoe UI", 10)).pack(side=tk.LEFT, padx=(10, 4))
         self._grid_title_var = tk.StringVar()
-        tk.Entry(r1, textvariable=self._grid_title_var, bg=BG_INPUT,
-                 fg=FG_TEXT, insertbackground=FG_TEXT, relief=tk.FLAT, bd=0,
-                 font=("Segoe UI", 11)).pack(side=tk.LEFT, fill=tk.X,
-                                             expand=True, ipady=3)
+        # Built and packed on separate lines ON PURPOSE: Tk's .pack()
+        # returns None, so assigning the chained call would have stored
+        # None and the green Add button would focus nothing.
+        self._grid_title_entry = tk.Entry(
+            r1, textvariable=self._grid_title_var, bg=BG_INPUT,
+            fg=FG_TEXT, insertbackground=FG_TEXT, relief=tk.FLAT, bd=0,
+            font=("Segoe UI", 11))
+        self._grid_title_entry.pack(side=tk.LEFT, fill=tk.X, expand=True,
+                                    ipady=3)
 
         r2 = tk.Frame(form, bg=BG_PANEL)
         r2.pack(fill=tk.X, pady=2)
@@ -23818,6 +23827,84 @@ class BookReader:
                  font=("Segoe UI", 10)).pack(fill=tk.X, pady=(4, 0))
 
         self._grid_refresh()
+
+    def _grid_add_from_toolbar(self) -> bool:
+        """Green + on the Card Grid: open the form, then commit it.
+
+        The owner's flow across this app is open with Add, fill it, commit
+        with Add -- so the first press puts the cursor in Title with the
+        next free cell already filled, and registers the form as the
+        toolbar's inline input. The NEXT press (or the yellow Save, which
+        reads the same hook) files the card.
+
+        Returns True only when it claims the click. The grid tab was
+        missing from this chain entirely until 2026-11-27, which is why
+        the green button did nothing in this room while it worked in every
+        other one.
+        """
+        if not self._study_workspace_visible():
+            return False
+        if getattr(self, "_study_active_tab", None) != "grid":
+            return False
+        if getattr(self, "_grid_cell_var", None) is None:
+            return False          # tab never built; do not claim
+
+        # Prefill the address so he never has to remember what is taken.
+        if not self._grid_cell_var.get().strip():
+            try:
+                free = grid_cards.next_free(study_db.grid_cards_all(),
+                                            self._grid_order)
+            except Exception:                          # pragma: no cover
+                free = "A1"
+            self._grid_cell_var.set(free)
+
+        try:
+            self._grid_title_entry.focus_set()
+        except Exception:                              # pragma: no cover
+            pass
+        self._grid_status_var.set(
+            "Type a title, then press Add again (or Save) to file it.")
+        # Hold the bound method in ONE place and register THAT object.
+        # `self._grid_commit_from_toolbar` builds a NEW bound method on
+        # every access, so `x is self._grid_commit_from_toolbar` can never
+        # be true -- the hook would never clear, and the next Add pressed
+        # in any other room would file a card from a room he had left.
+        self._grid_inline_hook = self._grid_commit_from_toolbar
+        self._ftb_inline_input = self._grid_inline_hook
+        return True
+
+    def _grid_commit_from_toolbar(self) -> None:
+        """File the open card, then stand down as the inline input.
+
+        Clearing the hook matters: a stale commit left registered would
+        fire the NEXT time he pressed Add anywhere in the app, filing a
+        card from a room he had already left.
+        """
+        hook = getattr(self, "_grid_inline_hook", None)
+        armed = getattr(self, "_ftb_inline_input", None)
+        if hook is not None and armed is hook:
+            self._ftb_inline_input = None
+            self._grid_inline_hook = None
+        self._grid_save()
+
+    def _grid_remove_from_toolbar(self) -> bool:
+        """Red bin on the Card Grid: decline, out loud.
+
+        There is no delete. Cards archive by moving to the RED zone, and
+        a control that quietly does nothing is the defect this shop names
+        first -- so the click is CLAIMED and answered rather than falling
+        through to a generic message about clicking into a field.
+        """
+        if not self._study_workspace_visible():
+            return False
+        if getattr(self, "_study_active_tab", None) != "grid":
+            return False
+        if getattr(self, "_grid_status_var", None) is None:
+            return False
+        self._grid_status_var.set(
+            "Cards are archived, never deleted. Set the zone to RED and "
+            "file it again to retire a card.")
+        return True
 
     def _grid_toggle_order(self) -> None:
         self._grid_order = (grid_cards.COLUMN_MAJOR
