@@ -10,6 +10,51 @@ and the project aims to follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+- **🎯 The gates lead somewhere — the Goals list now filters by life
+  area.** Owner report 2026-11-28: *"it doesn't matter what gate you click
+  on, it always shows the first goal for the mental gate."* Measured, not
+  guessed: the list query selected every goal with **no `WHERE` clause**,
+  and `life_area` was **write-only** — present in exactly three statements
+  across 28,877 lines (single-goal load, INSERT, UPDATE). Every gate
+  therefore showed the same unfiltered list, headed by whichever goal had
+  the highest id. Fixed at the root: `lyceum.goals.list_query()` builds the
+  filtered query as **pure, unit-tested logic** (the key is bound, never
+  interpolated; an unknown key raises rather than quietly rendering an
+  empty room), and the panel shows which gate it is displaying plus a
+  worded empty state instead of a blank box.
+- **One door into the Goals room.** The seven named gates and the purple
+  🎯 *Set goals on weak areas* button reached the panel by two different
+  routes; the second was wired straight to the screen switch, so it handed
+  over whatever the form was last left holding — **including the previous
+  goal's row id, which made the next Save an UPDATE of an old goal instead
+  of a new one.** That is the owner's *"the gate's goal shows up in a
+  different goal."* Both routes now go through one `EnterGoalsRoom`
+  contract (Law 4: a search is a guess, a hook is a contract).
+- **Law 6 item 1 on the goals list:** `exportselection=False`. A CRUD
+  listbox on Tk's default shares its selection window-wide, so clicking
+  into the Goal title field silently stole it while the form still pointed
+  at a goal.
+- **Law 3 on the whole gate path.** It emitted **zero** breadcrumbs — a
+  grep of the live `qa_debug.log` for `goal`, `area`, `gate` and `prefill`
+  returned nothing across 43 KB, so the log could not hold the diagnosis.
+  Every entry now writes `goals-enter: …`, and the two silent declines (a
+  skipped hook, a swallowed `TclError`) speak on screen and in the log.
+- **The regression gate that could not fail has been replaced.**
+  `test_wheel_buttons_wired_to_goals_prefill` matched the *string*
+  `_zz_prefill_goal_area` in the source and never executed a line; it was
+  green throughout. In its place `tests/test_goals_area_filter.py` runs the
+  filter against a throwaway database and `tests/test_goals_one_door.py`
+  gates the single entry point, the breadcrumbs and `exportselection`.
+  Acceptance A7 demonstrated: deleting the `WHERE` clause turns the suite
+  red. Scope `docs/SCOPE_GOALS_AREA_FILTER.md`, blueprint
+  `docs/BLUEPRINT_GOALS_AREA_FILTER.md`. Suite **593** green (skipped 14)
+  — measured 2026-11-28, `Ran 593 tests in 155.028s · OK (skipped=14)`; the
+  pre-change count was not measured and is not claimed here. **Owner UAT
+  outstanding** — acceptance A1, A2, A5 and A6 are
+  his run on the real screen, and nothing here is called done until he has
+  made it.
+
 ### Added
 - **🕌 G8 — completing the Dome** (owner's second markup,
   2026-07-30: "join the sky to the ground… complete the dome"). The

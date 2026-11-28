@@ -353,24 +353,12 @@ class WheelAreaButtonGateTest(unittest.TestCase):
         self.assertIn("trace_add", attrs,
                       "badge no longer repaints when the area changes")
 
-    def test_wheel_buttons_wired_to_goals_prefill(self):
-        wheel = _func_consts("_build_wheel_panel")
-        self.assertIn("_zz_prefill_goal_area", wheel,
-                      "wheel area buttons no longer reach the Goals prefill")
-        goals_assigns = False
-        for node in ast.walk(_app_tree()):
-            if isinstance(node, ast.FunctionDef) \
-                    and node.name == "_build_goals_panel":
-                goals_assigns = any(
-                    isinstance(n, ast.Assign) and any(
-                        isinstance(t, ast.Attribute)
-                        and t.attr == "_zz_prefill_goal_area"
-                        for t in n.targets)
-                    for n in ast.walk(node))
-        self.assertTrue(goals_assigns,
-                        "_build_goals_panel no longer registers the "
-                        "area-prefill hook")
-
+# test_wheel_buttons_wired_to_goals_prefill was REMOVED 2026-11-28.
+# It matched the string '_zz_prefill_goal_area' in the source and never ran
+# a line, so it stayed green the whole time every gate showed the same
+# unfiltered list. Replaced by tests/test_goals_area_filter.py (which runs
+# the filter against a throwaway database) and tests/test_goals_one_door.py
+# (which gates the single entry point). Scope: docs/SCOPE_GOALS_AREA_FILTER.md
 
 if __name__ == "__main__":
     unittest.main()

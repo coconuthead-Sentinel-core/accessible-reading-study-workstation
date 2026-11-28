@@ -68,3 +68,49 @@ def summarize(rows, today=None):
         else:
             n_ok += 1
     return per, (n_bad, n_ok, n_done)
+
+
+# ---------------------------------------------------------------------------
+# Area filtering — baseline: docs/SCOPE_GOALS_AREA_FILTER.md (2026-11-28),
+# blueprint: docs/BLUEPRINT_GOALS_AREA_FILTER.md (ALGORITHM GoalsListQuery,
+# ALGORITHM EmptyStateLine). Pure: no Tkinter, no DB handle, no I/O.
+# ---------------------------------------------------------------------------
+
+#: The seven life areas, in wheel order. The GUI's ``_WHEEL_AREAS`` keys must
+#: match this tuple exactly; ``tests/test_goals_area_filter.py`` gates it so the
+#: two cannot drift apart silently.
+AREA_KEYS = ("mental", "spiritual", "physical", "family",
+             "financial", "career", "social")
+
+_LIST_COLUMNS = "id, title, progress, status, target_date, created_at, life_area"
+_LIST_ORDER = "ORDER BY (status='done'), id DESC"
+
+
+def list_query(area=None):
+    """Return ``(sql, params)`` for the goals list, filtered to one life area.
+
+    ``area`` is a key from :data:`AREA_KEYS`, or ``None`` for every area. The
+    key is always BOUND as a parameter, never interpolated into the SQL text.
+
+    Raises ``ValueError`` on an unknown key: a typo must fail loudly rather
+    than quietly render an empty room, which is the defect this function
+    exists to answer (every gate showed the same unfiltered list).
+    """
+    if area is None:
+        return ("SELECT %s FROM goals %s" % (_LIST_COLUMNS, _LIST_ORDER), ())
+    if area not in AREA_KEYS:
+        raise ValueError("unknown life area: %r" % (area,))
+    return ("SELECT %s FROM goals WHERE life_area = ? %s"
+            % (_LIST_COLUMNS, _LIST_ORDER), (area,))
+
+
+def empty_state_line(area_label=None):
+    """The sentence that stands where the list would be when it is empty.
+
+    ``area_label`` is the gate's display label (e.g. "physical"), or ``None``
+    when every area is in view. An empty box is a mystery; a sentence is not.
+    """
+    if not area_label:
+        return "No goals yet. Name one above, then Save."
+    return ("No goals behind the %s gate yet. Name one above, then Save."
+            % (area_label,))

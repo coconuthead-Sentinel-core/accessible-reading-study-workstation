@@ -24874,12 +24874,18 @@ class BookReader:
             # slider, push the color, land on a fresh Goals worksheet with
             # this area already selected (no re-typing; first brick of the
             # carry-the-data-forward flow).
-            def _area_goal(_lab=label):
+            def _area_goal(_key=k, _lab=label):
                 if goto_goals is not None:
                     goto_goals()
-                prefill = getattr(self, "_zz_prefill_goal_area", None)
-                if prefill is not None:
-                    prefill(_lab)
+                enter = getattr(self, "_zz_enter_goals_room", None)
+                if enter is None:
+                    # Law 3: STOP and say so — never a silent pass.
+                    _qlog(f"goals-enter: DECLINED — room not built "
+                          f"(gate={_key})")
+                    self.set_status("The Goals room is not built yet — "
+                                    "details in qa_debug.log.")
+                    return
+                enter(_key)
                 # G1b: the Sentinel walks through the gate WITH you —
                 # companion voice, instructions still crystal clear.
                 self.set_status(f"🛡 Sentinel: I know, friend — but we've "
@@ -25062,9 +25068,22 @@ class BookReader:
                   font=("Segoe UI", 10, "bold"), bg=ACCENT_GREEN, fg="white",
                   activebackground=ACCENT_GREEN, relief=tk.FLAT, padx=12, pady=4,
                   cursor="hand2", borderwidth=0).pack(side=tk.LEFT, padx=(12, 0))
+        def _all_areas_goals():
+            # The second door. It used to be wired straight to the screen
+            # switch, so it handed over whatever the form was last left
+            # holding; now it enters by the same contract as the gates.
+            if goto_goals is not None:
+                goto_goals()
+            enter = getattr(self, "_zz_enter_goals_room", None)
+            if enter is None:
+                _qlog("goals-enter: DECLINED — room not built (weak-areas)")
+                self.set_status("The Goals room is not built yet — "
+                                "details in qa_debug.log.")
+                return
+            enter(None)
         if goto_goals is not None:
             tk.Button(foot, text="🎯 Set goals on weak areas",
-                      command=goto_goals,
+                      command=_all_areas_goals,
                       font=("Segoe UI", 10, "bold"), bg=ACCENT_PURPLE,
                       fg="white", activebackground=ACCENT_PURPLE,
                       relief=tk.FLAT, padx=12, pady=4, cursor="hand2",
@@ -25108,11 +25127,23 @@ class BookReader:
         tk.Label(left, textvariable=goals_score_var, bg=BG_DARK, fg=FG_TEXT,
                  font=("Segoe UI", 9, "bold"), justify="left", anchor="w",
                  wraplength=200).pack(anchor="w", pady=(2, 2))
+        # The list says which gate it is showing. Without this the list looks
+        # identical behind every gate, which is how the missing filter went
+        # unnoticed (owner report 2026-11-28).
+        goals_showing_var = tk.StringVar(value="Showing: every area")
+        tk.Label(left, textvariable=goals_showing_var, bg=BG_DARK, fg=FG_MUTED,
+                 font=("Segoe UI", 9), justify="left", anchor="w",
+                 wraplength=200).pack(anchor="w", pady=(0, 4))
         lbwrap = tk.Frame(left, bg=BG_DARK)
         lbwrap.pack(fill=tk.Y, expand=True, pady=(4, 6))
+        # exportselection=False (Law 6 item 1): Tk's default ties a listbox
+        # selection to the window-wide selection token, so clicking into the
+        # Goal title field silently steals it while the form still points at
+        # the loaded goal — and Save then UPDATEs instead of INSERTing.
         lb = tk.Listbox(lbwrap, width=26, bg=BG_INPUT, fg=FG_TEXT,
                         selectbackground=ACCENT_SLATE, relief=tk.FLAT,
                         font=("Segoe UI", 10), activestyle="none",
+                        exportselection=False,
                         highlightthickness=0)
         lsb = tk.Scrollbar(lbwrap, orient="vertical", command=lb.yview, width=14)
         lb.configure(yscrollcommand=lsb.set)
@@ -25440,18 +25471,28 @@ class BookReader:
                 widget.insert("1.0", val)
 
         def _refresh_list(select_id=None):
+            # ALGORITHM RefreshGoalsList (docs/BLUEPRINT_GOALS_AREA_FILTER.md).
+            # The query comes from the pure core, so the filter is unit-tested
+            # without a display — tests/test_goals_area_filter.py.
             records.clear()
             lb.delete(0, tk.END)
+            area = state.get("view_area")
             try:
-                rows = self._db_query(
-                    "SELECT id,title,progress,status,target_date,created_at "
-                    "FROM goals ORDER BY (status='done'), id DESC")
-            except Exception:
+                rows = self._db_query(*_goals.list_query(area))
+            except ValueError as e:
+                _qlog(f"goals-list: DECLINED — {e}; falling back to every area")
+                self.set_status(f"Unknown life area — showing every goal ({e}).")
+                area = None
+                state["view_area"] = None
+                rows = self._db_query(*_goals.list_query(None))
+            except Exception as e:
+                _qlog(f"goals-list: DECLINED — query failed: {e!r}")
+                self.set_status("Could not read your goals — details in qa_debug.log.")
                 rows = []
             per, (n_bad, n_ok, n_done) = _goals.summarize(
                 [(created, target, prog, status)
-                 for (_g, _t, prog, status, target, created) in rows])
-            for idx, (gid, gtitle, prog, status, target, created) in enumerate(rows):
+                 for (_g, _t, prog, status, target, created, _a) in rows])
+            for idx, (gid, gtitle, prog, status, target, created, _a) in enumerate(rows):
                 records.append(gid)
                 badge, level, _behind = per[idx]
                 lb.insert(tk.END, f"{badge} · {gtitle or '(untitled)'} ({prog}%)")
@@ -25459,6 +25500,17 @@ class BookReader:
                     lb.itemconfig(idx, foreground=_GOAL_LEVEL_COLOR.get(level, FG_MUTED))
                 except tk.TclError:
                     pass
+            if not rows:
+                # An empty box is a mystery; a sentence is not.
+                lb.insert(tk.END, _goals.empty_state_line(
+                    self._zz_area_label(area) if area else None))
+                try:
+                    lb.itemconfig(0, foreground=FG_MUTED)
+                except tk.TclError:
+                    pass
+            goals_showing_var.set(
+                "Showing: " + (self._zz_area_label(area) if area
+                               else "every area"))
             goals_score_var.set(
                 f"🔴 {n_bad} behind    🟢 {n_ok} on track    ✅ {n_done} done")
             if select_id in records:
@@ -25515,14 +25567,32 @@ class BookReader:
         # F1 (2026-07-26): the Wheel's colored area buttons land here —
         # fresh worksheet, that life area preselected, cursor in the Goal
         # line. Registered on self because the Wheel panel is built first.
-        def _prefill_goal_area(label):
+        def _enter_goals_room(area=None):
+            """ALGORITHM EnterGoalsRoom — the ONE door into this room.
+
+            Every button that shows the Goals panel comes through here, so
+            the room is always entered in a DEFINED state: no goal id in the
+            form, the badge naming `area`, and the list filtered to it.
+            `area` is a key from lyceum.goals.AREA_KEYS, or None for every
+            area. Before this existed, two doors reached the panel by
+            different routes and one handed over a stale form, so a new
+            goal typed after walking through it UPDATEd an old one.
+            """
             try:
                 _clear_form()
-                area_var.set(self._zz_area_label(label))
+                state["view_area"] = area
+                if area is not None:
+                    area_var.set(self._zz_area_label(area))
+                _refresh_list()
                 title_e.focus_set()
-            except tk.TclError:
-                pass
-        self._zz_prefill_goal_area = _prefill_goal_area
+                _qlog(f"goals-enter: area={area!r} rows={len(records)} "
+                      f"form=cleared badge={area_var.get()!r}")
+            except tk.TclError as e:
+                # Law 3: a decline speaks. This used to be a bare `pass`.
+                _qlog(f"goals-enter: DECLINED — {e!r}")
+                self.set_status("The Goals room did not open — details in "
+                                "qa_debug.log. Say the word and I'll look.")
+        self._zz_enter_goals_room = _enter_goals_room
 
         def _save_goal():
             gtitle = title_e.get().strip()
@@ -25561,6 +25631,10 @@ class BookReader:
                         "target_date=?,progress=?,status=?,baseline=?,"
                         "target_level=?,updated_at=? "
                         "WHERE id=?", fields + (now, state["id"]))
+                # Show the goal where it actually landed: saving into another
+                # area moves the view with it, rather than refreshing a list
+                # the goal is no longer in.
+                state["view_area"] = self._zz_area_key(area_var.get())
                 _refresh_list(select_id=state["id"])
                 self.set_status(f"Saved goal: {gtitle}")
                 if was_new:
